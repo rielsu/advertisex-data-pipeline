@@ -69,3 +69,52 @@ Amazon CloudWatch is used to monitor data pipelines, setting up alarms for anoma
 
 ## Conclusion
 This solution provides a robust and scalable data engineering platform for AdvertiseX, enabling the company to analyze and optimize its advertising campaigns effectively.
+
+
+# AdvertiseXClient
+
+AdvertiseXClient is a Python client for sending data to AWS Kinesis Firehose streams. It supports processing and sending JSON, CSV, and Avro files.
+
+## Installation
+
+Ensure that you have Python and `boto3` installed. You can install `boto3` using pip:
+
+```bash
+pip install boto3
+```
+
+## Usage
+
+Import the AdvertiseXClient class from the module.
+
+```bash
+from advertise_x_client import AdvertiseXClient
+```
+
+Define your Firehose stream mappings. The keys should be the file types ('json', 'csv', 'avro'), and the values should be the corresponding Firehose stream names.
+
+```bash
+streams = {
+    'json': 'AdvertiseX-dev-impressions',
+    'csv': 'AdvertiseX-dev-clicks',
+    'avro': 'AdvertiseX-dev-bid_requests'
+}
+```
+
+Create an instance of AdvertiseXClient with the stream mappings.
+
+```bash
+advertise_x_client = AdvertiseXClient(streams)
+```
+Use the process_file method to send data from a file to the appropriate Firehose stream. The method automatically detects the file type and sends the data in batches to the corresponding stream.
+
+```bash
+advertise_x_client.process_file('path/to/ad_impressions.json')
+advertise_x_client.process_file('path/to/clicks_conversions.csv')
+advertise_x_client.process_file('path/to/bid_requests.avro')
+```
+
+## Notes
+
+Ensure that the AWS credentials are correctly configured in your environment to allow access to the Kinesis Firehose service.
+The batch size for sending records to Firehose is set to 500. You can adjust this based on your needs.
