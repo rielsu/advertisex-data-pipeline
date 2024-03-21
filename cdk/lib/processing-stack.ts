@@ -8,6 +8,7 @@ import { AdvertiseXDataStack } from './data-stack';
 import { StageConfig } from './config-builder';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
+
 interface AdvertiseXProcessingStackProps extends cdk.StackProps {
   dataStack: AdvertiseXDataStack;
   stageConfig: StageConfig;
@@ -25,6 +26,8 @@ export class AdvertiseXProcessingStack extends cdk.Stack {
     const glueRole = new iam.Role(this, 'GlueRole', {
       assumedBy: new iam.ServicePrincipal('glue.amazonaws.com'),
     });
+
+
 
     // Grant Glue access to the data lake bucket
     dataLakeBucket.grantReadWrite(glueRole);
@@ -47,11 +50,22 @@ export class AdvertiseXProcessingStack extends cdk.Stack {
       numberOfWorkers: 2,
     });
 
+    const glueJobPolicyStatement = new iam.PolicyStatement({
+      actions: ['glue:StartJobRun'],
+      resources: [`arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:job/${glueJob.name}`],
+    });
+
 
 
     glueTriggerLambda.addEventSource(new events.S3EventSource(dataLakeBucket, {
       events: [s3.EventType.OBJECT_CREATED],
       filters: [{ prefix: 'raw/' }] // Adjust the prefix based on your S3 folder structure
     }));
+
+    glueTriggerLambda.role?.attachInlinePolicy(
+      new iam.Policy(this, 'GlueJobPolicy', {
+        statements: [glueJobPolicyStatement],
+      })
+    );
   }
 }
